@@ -1,0 +1,26 @@
+---
+title: "week12"
+author: "Nga Do"
+date: "2023-04-18"
+output: html_document
+---
+
+# Script Settings and Resources
+```{r,  message=F}
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+library(tidyverse)
+library(jsonlite)
+```
+
+# Data Import and Cleaning
+```{r}
+# test
+week12_list <- fromJSON("https://www.reddit.com/r/IOPsychology/.json", flatten = T)
+week12_original_tbl <- week12_list$data$children
+week12_tbl <- week12_original_tbl %>%
+  select(post = data.title,
+         upvotes = data.ups)
+```
+
+
+
