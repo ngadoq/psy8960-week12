@@ -99,4 +99,8 @@ topics_tbl
 # 2
 
 # Create a wordcloud of io_dtm
+wordcloud(io_tidy$term, io_tidy$count, max.words = 100, random.order = FALSE, colors = brewer.pal(8, "Dark2"))
+
+# Interpret
+
 
