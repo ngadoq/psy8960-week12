@@ -47,9 +47,18 @@ compare_them <- function(corpus1, corpus2) {
 # Compare io_corpus and io_corpus_original
 compare_them(io_corpus, io_corpus_original)
 
+# Create a bigram DTM called io_dtm
+tokenizer <- function(x) {
+  NGramTokenizer(x, Weka_control(min = 2, max = 2))
+}
+io_dtm <- DocumentTermMatrix(
+  io_corpus, 
+  control = list(tokenize = tokenizer)
+)
+# Create slim DTM
 
-
-
+io_slim_dtm <- removeSparseTerms(io_dtm, 1/2, 1/3)
+io_slim_dtm
 
 
 
