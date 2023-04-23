@@ -25,8 +25,34 @@ io_corpus <- io_corpus_original %>%
     x <- gsub("io psychology|industrial-organizational psychology|industrial and organizational psychology|i/o psychology|i-o psychology|i-o psych|i-o|i/o|io", "", x)})) %>% 
   # Remove extra whitespace
   tm_map(stripWhitespace) %>% 
-  # Remove stop words
-  tm_map(removeWords, stopwords("en"))
+  # Remove English stop words
+  tm_map(removeWords, stopwords("en")) %>% 
+  # Remove punctuation 
+  tm_map(removePunctuation) 
+
+# Write function compare_them 
+
+compare_them <- function(corpus1, corpus2) {
+  # Select a random row from each corpus
+  random_row <- sample(1:min(length(corpus1), length(corpus2)), 1) 
+  # Get the content of the selected row from each corpus
+  corpus1_random <- corpus1[[random_row]]$content
+  corpus2_random <- corpus2[[random_row]]$content
+  
+  # Print the content of both corpora
+  cat("Corpus 1:\n", corpus1_random, "\n\n")
+  cat("Corpus 2:\n", corpus2_random, "\n\n")
+}
+
+# Compare io_corpus and io_corpus_original
+compare_them(io_corpus, io_corpus_original)
+
+
+
+
+
+
+
   
   
 

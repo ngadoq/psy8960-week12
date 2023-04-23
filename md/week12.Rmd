@@ -134,7 +134,7 @@ posts_df <- do.call("rbind", posts)
 week12_tbl <- posts_df %>%
   select(title = data.title,
          upvotes = data.ups)%>%
-  saveRDS("../data/week12.RDS")
+  saveRDS("../R/week12.RDS")
 
 ```
 
