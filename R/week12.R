@@ -8,6 +8,7 @@ library(textstem)
 library(RWeka)
 library(wordcloud)
 library(tidytext)
+library(topicmodels)
 
 # Data Import and Cleaning
 week12_tbl <- readRDS("week12.RDS")  
@@ -56,12 +57,46 @@ io_dtm <- DocumentTermMatrix(
   control = list(tokenize = tokenizer)
 )
 # Create slim DTM
-
-io_slim_dtm <- removeSparseTerms(io_dtm, 1/2, 1/3)
+io_slim_dtm <- removeSparseTerms(io_dtm, 1/3)
 io_slim_dtm
 
+# Use latent Dirichlet allocation to categorize posts into topics from io_dtm
+# Convert DTM to tidy format
+io_tidy <- tidy(io_dtm)
+
+dtm_io <- io_tidy %>% 
+  cast_dtm(document, term, count) 
 
 
-  
-  
+# Create model
+io_lda <- topicmodels::LDA(dtm_io,
+                           k = 2,
+                           method = "Gibbs",
+                           control = list(seed = 42)
+)
+
+# Glimpse the topic model output
+glimpse(io_lda)
+
+# Tidy the matrix of word probabilities
+lda_topics <- io_lda %>% 
+  tidy(matrix = "gamma") %>% 
+  # Arrange the topics by document probabilities in descending order
+  arrange(desc(gamma))
+
+# Convert the VCorpus object to a tidy format
+io_corpus_tidy <- tidy(io_corpus) %>% 
+  rename("document" = "id")
+
+# Join with original data to get post titles
+topics_tbl <-  left_join(lda_topics, io_corpus_tidy, by= "document") %>% 
+  select(doc_id=document, original=text, topic, probability=gamma  )
+
+topics_tbl
+
+
+# 1
+# 2
+
+# Create a wordcloud of io_dtm
 
