@@ -48,6 +48,8 @@ compare_them <- function(corpus1, corpus2) {
 # Compare io_corpus and io_corpus_original
 compare_them(io_corpus, io_corpus_original)
 
+# Analysis
+
 # Create a bigram DTM called io_dtm
 tokenizer <- function(x) {
   NGramTokenizer(x, Weka_control(min = 2, max = 2))
@@ -67,10 +69,11 @@ io_tidy <- tidy(io_dtm)
 dtm_io <- io_tidy %>% 
   cast_dtm(document, term, count) 
 
+# Determine k
 
 # Create model
 io_lda <- topicmodels::LDA(dtm_io,
-                           k = 2,
+                           k = 4,
                            method = "Gibbs",
                            control = list(seed = 42)
 )
@@ -90,7 +93,7 @@ io_corpus_tidy <- tidy(io_corpus) %>%
 
 # Join with original data to get post titles
 topics_tbl <-  left_join(lda_topics, io_corpus_tidy, by= "document") %>% 
-  select(doc_id=document, original=text, topic, probability=gamma  )
+  select(doc_id=document, original=text, topic, probability=gamma)
 
 topics_tbl
 
@@ -103,4 +106,12 @@ wordcloud(io_tidy$term, io_tidy$count, max.words = 100, random.order = FALSE, co
 
 # Interpret
 
+# Create a dataset called final_tbl that contains the contents of topics_tbl plus the upvote count
+week12_tbl$doc_id <- rownames(week12_tbl)
+final_tbl <- left_join(topics_tbl, select(week12_tbl, c(doc_id, upvotes)), by= "doc_id") %>% 
+  mutate(topic =as.factor(topic))
 
+# Run ANOVA to determine if upvotes differs by topic
+anova_model <- aov(upvotes ~ topic, data = final_tbl)
+summary(anova_model)
+                       

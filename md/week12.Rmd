@@ -11,132 +11,26 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(tidyverse)
 library(jsonlite)
 library(httr)
+library(RedditExtractoR)
 ```
 
 # Data Import and Cleaning
-```{r}
-# test
-week12_list <- fromJSON("https://www.reddit.com/r/IOPsychology/.json", flatten = T)
-week12_original_tbl <- week12_list$data$children
-week12_tbl <- week12_original_tbl %>%
-  select(post = data.title,
-         upvotes = data.ups)
 
-week12_original_tbl$data.created_utc
+```{r message=FALSE, warning=FALSE}
+# Use RedditExtractoR to get URLs of a year of posts
+week12 <- find_thread_urls(subreddit="IOPsychology", period = "year")
+# Retrieve metadata from URL
+week12_content <- get_thread_content(week12$url)$threads
 
-```
-
-```{r}
-# Create empty list to store post data
-posts_list <- list()
-
-# Create Reddit API URL
-url <- "https://api.reddit.com/r/IOPsychology/new.json?limit=100"
-
-# Send GET request to Reddit API
-response <- GET(url, 
-                user_agent("UMN Researcher do000100@umn.edu"))
-
-# Set the subreddit and time period for posts
-subreddit <- "IOPsychology"
-after_fullname <- "t3_abcdefgh"  # Replace with the fullname of the post after which you want to fetch posts
-limit <- 100
-sort <- "new"
-restrict_sr <- 1
-
-# Create an empty list to store fetched posts
-posts_list <- list()
-
-# Function to fetch posts for a given URL
-fetch_posts <- function(url) {
-  response <- httr::GET(url, user_agent("my_user_agent"))
-  content <- httr::content(response, as = "text")
-  json <- jsonlite::fromJSON(content)
-  return(json$data$children)
-}
-
-# Fetch posts using pagination
-
-while (TRUE) {
-  url <- "https://reddit.com/r/IOPsychology/.json?limit=100&after=t3_abcdefgh"
-  response <- GET(url, user_agent("UMN Researcher do000100@umn.edu"))
-  stop_for_status(response)
-  # Extract the data from the response
-  data <- content(response)
-  if (is.null(data$after)) {
-      break
-    } else {
-    url <- paste0("https://www.reddit.com/r/IOPsychology/new.json?limit=100&after=", data$after)
-}
-  }
- 
-Sys.sleep(1)
-
-
-# Extract the response content
-content <- httr::content(response, as = "text")
-json <- fromJSON(data, flatten = T)
-
-week12_tbl <- json %>%
-  select(post = data.title,
-         upvotes = data.ups,
-         date =data.created_utc) %>% 
-  mutate(date = as.POSIXct(date, origin = "1970-01-01", tz = "UTC"))
-
-
-```
-
-
-```{r}
-base_url <- "https://www.reddit.com/r/IOPsychology/.json"
-params_loop <- list(after="", limit="100")
-
-# Set the number of items to retrieve
-n_items <- 1000
-
-# Create an empty list to store the posts
-posts <- list()
-
-# Set the initial after parameter to NULL
-after <- NULL
-
-while (length(unlist(posts)) < n_items) {
-  # Add the count and after parameters to the URL
-  
-  response <- GET(base_url,query=params_loop, user_agent("do000100@umn.edu"))
-  
-  # Check for errors
-  stop_for_status(response)
-  
-  # Extract the data from the response
-  data <- content(response, as = "text")
-  
-  # Parse the JSON data into a list
-  data_list <- fromJSON(data, flatten = T)
-  
-  # Extract the relevant data from the list and add it to the posts list
-  posts[[length(posts) + 1]] <- data_list$data$children
-  
-  #posts <- c(posts, data_list$data$children)
-  
-  # Get the after value from the response
-  params_loop$after <- data_list$data$after
-  
-  # Add the after parameter to the next request
- # url <- paste0(url, "?after=", after)
-  
-  # Add a delay of 1 second between requests
-  Sys.sleep(1)
-}
-
-posts_df <- do.call("rbind", posts)
-
-week12_tbl <- posts_df %>%
-  select(title = data.title,
-         upvotes = data.ups)%>%
+# Create week12_tbl
+week12_tbl <- week12_content %>%
+  select(title, upvotes)%>%
   saveRDS("../R/week12.RDS")
-
 ```
+
+
+
+
 
 
 
