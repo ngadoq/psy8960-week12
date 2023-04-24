@@ -17,22 +17,21 @@ week12_tbl <- readRDS("week12.RDS")
 io_corpus_original <- VCorpus(VectorSource(week12_tbl$title))
 # Create a new lemmatized pre-processed corpus from io_corpus_original called io_corpus
 
-
 io_corpus <- io_corpus_original %>% 
-  # Convert all to lowercase
-  tm_map(content_transformer(str_to_lower)) %>% 
+  # Convert all to lowercase for easy process later
+  tm_map(content_transformer(tolower)) %>% 
+  # Remove numbers since we're only intersted in words
+  tm_map(removeNumbers) %>% 
   # Remove references to IO Psychology
-  tm_map(content_transformer(function(x) {
-    x <- gsub("io psychology|industrial-organizational psychology|industrial and organizational psychology|i/o psychology|i-o psychology|i-o psych|i-o|i/o|io", "", x)})) %>% 
-  # Remove extra whitespace
+  tm_map(removeWords, c("io psychology", "industrial-organizational psychology", "industrial and organizational psychology", "i/o psychology", "i-o psychology", "i-o psych", "i-o", "i/o", "io")) %>% 
+  # Remove extra white space
   tm_map(stripWhitespace) %>% 
   # Remove English stop words
-  tm_map(removeWords, stopwords("en")) %>% 
+  tm_map(removeWords, stopwords("en")) 
   # Remove punctuation 
   tm_map(removePunctuation) 
 
 # Write function compare_them 
-
 compare_them <- function(corpus1, corpus2) {
   # Select a random row from each corpus
   random_row <- sample(1:min(length(corpus1), length(corpus2)), 1) 
@@ -49,7 +48,6 @@ compare_them <- function(corpus1, corpus2) {
 compare_them(io_corpus, io_corpus_original)
 
 # Analysis
-
 # Create a bigram DTM called io_dtm
 tokenizer <- function(x) {
   NGramTokenizer(x, Weka_control(min = 2, max = 2))
