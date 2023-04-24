@@ -6,11 +6,9 @@ output: html_document
 ---
 
 # Script Settings and Resources
-```{r,  message=F}
+```{r,message=F}
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(tidyverse)
-library(jsonlite)
-library(httr)
 library(RedditExtractoR)
 ```
 
